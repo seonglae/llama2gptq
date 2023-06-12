@@ -5,8 +5,8 @@ from src.qa import qa_loop
 from constants import (SOURCE_DIRECTORY, PERSIST_DIRECTORY)
 
 
-def ask(text: str) -> str:
-  stats = qa_loop(text)
+def ask(device: str = "cuda") -> str:
+  stats = qa_loop(device)
   return stats
 
 

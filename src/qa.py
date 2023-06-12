@@ -73,10 +73,10 @@ def qa(db, embeddings, llm) -> Tuple:
   print(answer)
   return (query, input_refs, answer_refs, answer, output_refs)
 
-def qa_loop(device_type='cuda'):
-  print(f"Running on: {device_type}")
+def qa_loop(device='cuda'):
+  print(f"Running on: {device}")
   embeddings = HuggingFaceInstructEmbeddings(
-      model_name="hkunlp/instructor-xl", model_kwargs={"device": device_type}
+      model_name="hkunlp/instructor-xl", model_kwargs={"device": device}
   )
   db = Chroma(
       persist_directory=PERSIST_DIRECTORY,

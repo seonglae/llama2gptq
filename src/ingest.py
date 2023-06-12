@@ -43,7 +43,7 @@ def load_documents(folder_path: str) -> List[Document]:
   return documents
 
 
-def ingest(source: str, output: str, device_type='cuda'):
+def ingest(source: str, output: str, device='cuda'):
   print(f"Loading documents from {source}")
   documents = load_documents(source)
   for doc in documents:
@@ -56,7 +56,7 @@ def ingest(source: str, output: str, device_type='cuda'):
 
   embeddings = HuggingFaceInstructEmbeddings(
       model_name="hkunlp/instructor-xl",
-      model_kwargs={"device": device_type},
+      model_kwargs={"device": device},
   )
   db = Chroma.from_documents(
       texts,
