@@ -1,5 +1,9 @@
-# Angryface
+<p align="center">
+<img src="img/angryface.png" style="width: 150px"/>
+</p>
 
+# Angryface
+This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT) and so on.
 
 ## Install
 ```
