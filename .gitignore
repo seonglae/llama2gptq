@@ -1,4 +1,4 @@
-db
+db*
 knowledge
 .env
 __pycache__
@@ -6,3 +6,5 @@ __pycache__
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.venv
+.chroma
