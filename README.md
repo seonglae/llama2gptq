@@ -1,11 +1,18 @@
 # Angryface
 
+Angry for priceless AI products. pursuing local, private and personal AI who studies and answers using your own documents.
+
 <p align="center">
 <img src="img/angryface.png" style="width: 150px"/>
 </p>
 
 This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT) and so on.
 This project is POC project for [Texomata](https://github.com/texonom/texomata) (browser chat AI). Currently CLO, web UI supports only.
+
+
+![Chat Image](img/chat.png)
+<figcaption align = "center"><b>may differ from the actual page</b></figcaption>
+<br/>
 
 ## Install
 
@@ -21,6 +28,7 @@ pip3 install torch==#TORCH_VERSION chromadb --index-url https://download.pytorch
 ```
 
 ## Run
+
 Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
 
 ### Web UI
@@ -35,11 +43,10 @@ streamlit run chat.py
 python main.py chat
 ```
 
-
 ## Future Plan
-- [ ] [MPS](https://texonom.com/8d71e4de36e4416c83f65ee7bdaa412b) support using dynamic model selecting
-- [ ] 
 
+- [ ] [MPS](https://texonom.com/8d71e4de36e4416c83f65ee7bdaa412b) support using dynamic model selecting
+- [ ] Stateful Web App support like [chat-langchain](https://chat.langchain.dev/)
 
 ## App Stack
 
