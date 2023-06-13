@@ -18,7 +18,7 @@ from langchain.document_loaders import (
 from constants import (CHROMA_SETTINGS)
 
 
-DOCUMENT_MAP: Dict[str, Type[BaseLoader]] = {
+DOCUMENT_MAP = {
     ".txt": TextLoader,
     ".pdf": PDFMinerLoader,
     ".csv": CSVLoader,
@@ -65,4 +65,3 @@ def ingest(source: str, output: str, device='cuda'):
       client_settings=CHROMA_SETTINGS,
   )
   db.persist()
-  db = None

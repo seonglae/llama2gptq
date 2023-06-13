@@ -1,12 +1,12 @@
 import fire
 
 from src.ingest import ingest
-from src.qa import qa_loop
+from src.qa import chat_cli
 from constants import (SOURCE_DIRECTORY, PERSIST_DIRECTORY)
 
 
 def chat(device: str = "cuda") -> str:
-  stats = qa_loop(device)
+  stats = chat_cli(device)
   return stats
 
 
