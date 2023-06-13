@@ -7,37 +7,10 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
-
-
-def load_model(device: str):
-  model_id = "TheBloke/Wizard-Vicuna-7B-Uncensored-GPTQ"
-  model_basename = "Wizard-Vicuna-7B-Uncensored-GPTQ-4bit-128g.no-act-order"
-  tokenizer = AutoTokenizer.from_pretrained(
-      model_id, use_fast=True, max_length=4096)
-  model = AutoGPTQForCausalLM.from_quantized(
-      model_id,
-      model_basename=model_basename,
-      use_safetensors=True,
-      trust_remote_code=True,
-      device='cuda:0',
-      use_triton=False,
-      quantize_config=None)
-
-  pipe = pipeline(
-      "text-generation",
-      model=model,
-      tokenizer=tokenizer,
-      max_length=4096,
-      temperature=0,
-      top_p=0.95,
-      repetition_penalty=1,
-  )
-  llm = HuggingFacePipeline(pipeline=pipe)
-  return llm
 
 
 def load_embeddings(device):
@@ -53,11 +26,53 @@ def load_db(embeddings):
       embedding_function=embeddings,
       client_settings=CHROMA_SETTINGS,
   )
-  print(f"{db._client.list_collections()[0].count()} documents loaded")
   return db
 
 
-def ask(query, device, db, embeddings, llm) -> Tuple:
+def load_model(
+    device: str, model_id="TheBloke/WizardLM-7B-uncensored-GPTQ",
+    model_basename="WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order",
+    model_type="gptq"
+):
+  tokenizer = AutoTokenizer.from_pretrained(
+      model_id, use_fast=True)
+
+  if model_type == "gptq":
+    model = AutoGPTQForCausalLM.from_quantized(
+        model_id,
+        model_basename=model_basename,
+        use_safetensors=True,
+        trust_remote_code=True,
+        device='cuda:0',
+        use_triton=False
+    )
+  elif device.lower() == 'cuda':
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        device_map='auto',
+        torch_dtype=torch.float16,
+        low_cpu_mem_usage=True,
+        trust_remote_code=True,
+    )
+    model.tie_weights()
+  else:
+    tokenizer = LlamaTokenizer.from_pretrained(model_id)
+    model = LlamaForCausalLM.from_pretrained(model_id)
+
+  pipe = pipeline(
+      "text-generation",
+      model=model,
+      tokenizer=tokenizer,
+      max_length=2048,
+      temperature=0,
+      top_p=0.95,
+      repetition_penalty=1.15,
+  )
+  llm = HuggingFacePipeline(pipeline=pipe)
+  return llm
+
+
+def qa(query, device, db, embeddings, llm) -> Tuple:
   print(f"Running on: {device}")
   if embeddings is None:
     embeddings = load_embeddings(device)
@@ -97,19 +112,19 @@ def ask(query, device, db, embeddings, llm) -> Tuple:
   return (input_refs, answer_refs, answer, output_refs)
 
 
-def qa(device, db, embeddings, llm) -> Tuple:
+def qa_cli(device, db, embeddings, llm) -> Tuple:
   query = input("\nQuestion: ")
   if query == "exit":
     return ()
-  return (query, *ask(query, device, db, embeddings, llm))
+  return (query, *qa(query, device, db, embeddings, llm))
 
 
-def qa_loop(device='cuda'):
+def chat_cli(device='cuda'):
   embeddings = load_embeddings(device)
   db = load_db(embeddings)
   llm = load_model(device)
 
   conversation = []
   while True:
-    conversation.append(qa(device, db, embeddings, llm))
+    conversation.append(qa_cli(device, db, embeddings, llm))
   return conversation

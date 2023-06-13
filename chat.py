@@ -4,7 +4,7 @@ import torch
 import streamlit as st
 from streamlit_chat import message
 
-from src.qa import ask
+from src.qa import qa
 
 
 TITLE = 'Angry Face'
@@ -48,7 +48,7 @@ def query(query):
   device = 'cpu'
   if torch.cuda.is_available():
     device = 'cuda'
-  _, answer_refs, answer, output_refs = ask(
+  _, answer_refs, answer, output_refs = qa(
       query, device, None, None, None)
 
   # Append references
