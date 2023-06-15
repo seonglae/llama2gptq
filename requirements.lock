@@ -113,7 +113,7 @@ pyyaml==6.0
 regex==2023.6.3
 requests==2.31.0
 responses==0.18.0
-rfc3986==1.5.0
+rfc3986==2.0.0
 rich==13.0.1
 rouge==1.0.1
 safetensors==0.3.1
