@@ -146,7 +146,7 @@ typer==0.9.0
 typing-extensions==4.6.3
 typing-inspect==0.9.0
 tzdata==2023.3
-tzlocal==4.3
+tzlocal==5.0.1
 unstructured==0.7.3
 urllib3==2.0.3
 uvicorn==0.22.0
