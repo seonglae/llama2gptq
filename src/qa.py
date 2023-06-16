@@ -30,8 +30,8 @@ def load_db(embeddings):
 
 
 def load_model(
-    device: str, model_id="OccamRazor/pythia-160m-deduped-gptq-4bit",
-    model_basename="4bit-128g.pt",
+    device: str, model_id="TheBloke/WizardLM-7B-uncensored-GPTQ",
+    model_basename="WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order",
     model_type="gptq"
 ):
   tokenizer = AutoTokenizer.from_pretrained(
