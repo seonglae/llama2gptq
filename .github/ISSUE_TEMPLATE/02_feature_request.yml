@@ -1,0 +1,28 @@
+---
+name: 🟢 Feature Request
+description: Wouldn’t it be nice if
+labels:
+  - feature
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What?
+      description: Describe your feature idea
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: Describe the problem you are facing
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How?
+      description:
+        Describe you tried or ideas to implement the feature
+    validations:
+      required: false
