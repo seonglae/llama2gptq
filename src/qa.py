@@ -2,7 +2,6 @@ from time import time
 from typing import Tuple, List
 
 import torch
-from langcahin import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
@@ -31,8 +30,8 @@ def load_db(embeddings):
 
 
 def load_model(
-    device: str, model_id="TheBloke/WizardLM-7B-uncensored-GPTQ",
-    model_basename="WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order",
+    device: str, model_id="OccamRazor/pythia-160m-deduped-gptq-4bit",
+    model_basename="4bit-128g.pt",
     model_type="gptq"
 ):
   tokenizer = AutoTokenizer.from_pretrained(
@@ -42,7 +41,7 @@ def load_model(
     model = AutoGPTQForCausalLM.from_quantized(
         model_id,
         model_basename=model_basename,
-        use_safetensors=True,
+        use_safetensors=False,
         trust_remote_code=True,
         device='cuda:0',
         use_triton=False
@@ -73,7 +72,7 @@ def load_model(
   return llm
 
 
-def qa(query, device, db, embeddings, llm, history: List[List[str, str]]) -> Tuple:
+def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
   print(f"Running on: {device}")
   if embeddings is None:
     embeddings = load_embeddings(device)
@@ -92,7 +91,7 @@ def qa(query, device, db, embeddings, llm, history: List[List[str, str]]) -> Tup
   # Inference
   start = time()
   retriever = Chroma.from_documents(input_refs, embeddings).as_retriever()
-  qa = RetrievalQA.from_chain_type(
+  chain = RetrievalQA.from_chain_type(
       llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True,
       callbacks=[StreamingStdOutCallbackHandler()],
   )
@@ -100,7 +99,7 @@ def qa(query, device, db, embeddings, llm, history: List[List[str, str]]) -> Tup
   # History Prompt
   prompt = [f"Question: {q}\nAnswer: {a}\n" for [q, a] in history]
   query = "".join(prompt) + f'Question: {query}\nAnswer: '
-  res = qa(query)
+  res = chain(query)
   answer, answer_refs = res["result"], res["source_documents"]
   print(f"Time taken: {time() - start} seconds")
   for document in answer_refs:

@@ -46,10 +46,13 @@ if 'past' not in st.session_state:
 
 def query(query):
   device = 'cpu'
+  history = []
+  for i, _ in enumerate(st.session_state['generated']):
+    history.append([st.session_state['past'][i],
+                   st.session_state["generated"][i]])
   if torch.cuda.is_available():
     device = 'cuda'
-  _, answer_refs, answer, output_refs = qa(
-      query, device, None, None, None)
+  _, answer_refs, answer, output_refs = qa(query, device, None, None, None, history)
 
   # Append references
   refs = answer_refs + output_refs
