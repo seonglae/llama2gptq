@@ -1,7 +1,8 @@
 from time import time
-from typing import Tuple
+from typing import Tuple, List
 
 import torch
+from langcahin import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
@@ -66,13 +67,13 @@ def load_model(
       max_length=2048,
       temperature=0,
       top_p=0.95,
-      repetition_penalty=1.15,
+      repetition_penalty=1.5,
   )
   llm = HuggingFacePipeline(pipeline=pipe)
   return llm
 
 
-def qa(query, device, db, embeddings, llm) -> Tuple:
+def qa(query, device, db, embeddings, llm, history: List[List[str, str]]) -> Tuple:
   print(f"Running on: {device}")
   if embeddings is None:
     embeddings = load_embeddings(device)
@@ -83,40 +84,45 @@ def qa(query, device, db, embeddings, llm) -> Tuple:
 
   # input similarity
   start = time()
-  input_refs = db.similarity_search(query, search_type="similarity")
+  input_refs = db.search(query, search_type="similarity")
   print(f"Time taken: {time() - start} seconds")
   for document in input_refs:
     print("\n> " + document.metadata["source"])
 
-  # inference
+  # Inference
   start = time()
   retriever = Chroma.from_documents(input_refs, embeddings).as_retriever()
   qa = RetrievalQA.from_chain_type(
       llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True,
-      callbacks=[StreamingStdOutCallbackHandler()]
+      callbacks=[StreamingStdOutCallbackHandler()],
   )
+
+  # History Prompt
+  prompt = [f"Question: {q}\nAnswer: {a}\n" for [q, a] in history]
+  query = "".join(prompt) + f'Question: {query}\nAnswer: '
   res = qa(query)
   answer, answer_refs = res["result"], res["source_documents"]
   print(f"Time taken: {time() - start} seconds")
+  for document in answer_refs:
+    print("\n> " + document.metadata["source"])
 
   # output similarity
   start = time()
   output_refs = db.search(answer, search_type="similarity")
   print(f"Time taken: {time() - start} seconds")
+  for document in output_refs:
+    print("\n> " + document.metadata["source"])
 
   # Print the result
-  print("\n\n> Question:")
-  print(query)
-  print("\n> Answer:")
-  print(answer)
+  print(query + answer)
   return (input_refs, answer_refs, answer, output_refs)
 
 
-def qa_cli(device, db, embeddings, llm) -> Tuple:
+def qa_cli(device, db, embeddings, llm, history) -> Tuple:
   query = input("\nQuestion: ")
   if query == "exit":
     return ()
-  return (query, *qa(query, device, db, embeddings, llm))
+  return (query, *qa(query, device, db, embeddings, llm, history))
 
 
 def chat_cli(device='cuda'):
@@ -124,7 +130,8 @@ def chat_cli(device='cuda'):
   db = load_db(embeddings)
   llm = load_model(device)
 
-  conversation = []
+  pingongs = []
   while True:
-    conversation.append(qa_cli(device, db, embeddings, llm))
-  return conversation
+    history = [[pingpong[0], pingpong[3]] for pingpong in pingongs]
+    pingongs.append(qa_cli(device, db, embeddings, llm, history))
+  return pingongs
