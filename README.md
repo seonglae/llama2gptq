@@ -9,8 +9,8 @@ Angry for priceless AI products. pursuing local, private and personal AI who stu
 This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT) and so on.
 This project is POC project for [Texomata](https://github.com/texonom/texomata) (browser chat AI). Currently CLO, web UI supports only.
 
-
 ![Chat Image](img/chat.png)
+
 <figcaption align = "center"><b>may differ from the actual page</b></figcaption>
 <br/>
 
@@ -29,27 +29,27 @@ pip3 install torch==#TORCH_VERSION chromadb --index-url https://download.pytorch
 
 ## Run
 
+1. Ingest documents
+2. QA to Chat AI
+
 Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
 
-### Ingest
+### 1. Ingest
 
 ```zsh
 # Put document files to ./knowledge folder
 python main.py ingest
 # Or use provided Texonom DB
-git clone https://huggingface.co/datasets/seonglae/angryface db
+git clone https://huggingface.co/datasets/texonom/angryface db
 ```
 
-
-
-
-### Web UI
+### 2. Chat with Web UI
 
 ```zsh
 streamlit run chat.py
 ```
 
-### CLI interaction
+### 2. Chat with CLI
 
 ```zsh
 python main.py chat
