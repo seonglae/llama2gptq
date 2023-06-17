@@ -29,10 +29,10 @@ pip3 install torch==#TORCH_VERSION chromadb --index-url https://download.pytorch
 
 ## Run
 
+Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
+
 1. Ingest documents
 2. QA to Chat AI
-
-Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
 
 ### 1. Ingest
 
