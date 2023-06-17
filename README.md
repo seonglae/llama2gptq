@@ -31,6 +31,18 @@ pip3 install torch==#TORCH_VERSION chromadb --index-url https://download.pytorch
 
 Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
 
+### Ingest
+
+```zsh
+# Put document files to ./knowledge folder
+python main.py ingest
+# Or use provided Texonom DB
+git clone https://huggingface.co/datasets/seonglae/angryface db
+```
+
+
+
+
 ### Web UI
 
 ```zsh
