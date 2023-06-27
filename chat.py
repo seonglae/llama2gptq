@@ -7,6 +7,7 @@ from streamlit_chat import message
 from src.qa import qa
 
 
+DEVICE = 'cuda'
 TITLE = 'Angry Face'
 
 
@@ -43,23 +44,30 @@ if 'generated' not in st.session_state:
 if 'past' not in st.session_state:
   st.session_state['past'] = []
 
+if 'answers' not in st.session_state:
+  st.session_state['answers'] = []
+
 
 def query(query):
-  device = 'cpu'
+  st.session_state.past.append(query)
   history = []
   for i, _ in enumerate(st.session_state['generated']):
     history.append([st.session_state['past'][i],
                    st.session_state["generated"][i]])
-  if torch.cuda.is_available():
-    device = 'cuda'
-  _, answer_refs, answer, output_refs = qa(query, device, None, None, None, history)
+
+  _, answer_refs, answer, output_refs = qa(
+      query, DEVICE, None, None, None, history)
 
   # Append references
   refs = answer_refs + output_refs
   ref_set = {split(r"\\|/", ref.metadata["source"])[-1] for ref in refs}
+  st.session_state.generated.append(answer)
+
   for ref in ref_set:
     slug = split(r" |.md", ref)[-2]
     answer += f"\n> https://texonom.com/{slug}"
+
+  st.session_state.answers.append(answer)
   return answer
 
 
@@ -72,12 +80,10 @@ user_input = get_text()
 
 
 if user_input:
-  output = query(user_input)
-  st.session_state.past.append(user_input)
-  st.session_state.generated.append(output)
+  query(user_input)
 
 
 if st.session_state['generated']:
   for i, _ in enumerate(st.session_state['generated']):
     message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-    message(st.session_state["generated"][i], key=str(i), seed=13)
+    message(st.session_state["answers"][i], key=str(i), seed=13)

@@ -7,7 +7,7 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
@@ -32,8 +32,9 @@ def load_db(embeddings):
 def load_model(
     device: str, model_id="TheBloke/WizardLM-7B-uncensored-GPTQ",
     model_basename="WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order",
-    model_type="gptq"
+    model_type="gptq",
 ):
+  assert device == "cuda"
   tokenizer = AutoTokenizer.from_pretrained(
       model_id, use_fast=True)
 
@@ -46,25 +47,22 @@ def load_model(
         device='cuda:0',
         use_triton=False
     )
-  elif device.lower() == 'cuda':
+  elif model_type == "auto":
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
-        device_map='auto',
+        device_map='cuda:0',
         torch_dtype=torch.float16,
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
     model.tie_weights()
-  else:
-    tokenizer = LlamaTokenizer.from_pretrained(model_id)
-    model = LlamaForCausalLM.from_pretrained(model_id)
 
   pipe = pipeline(
       "text-generation",
       model=model,
       tokenizer=tokenizer,
       max_length=2048,
-      temperature=0,
+      temperature=0.01,
       top_p=0.95,
       repetition_penalty=1.5,
   )
@@ -84,9 +82,9 @@ def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
   # input similarity
   start = time()
   input_refs = db.search(query, search_type="similarity")
-  print(f"Time taken: {time() - start} seconds")
   for document in input_refs:
     print("\n> " + document.metadata["source"])
+  print(f"Time taken: {time() - start} seconds\n")
 
   # Inference
   start = time()
@@ -99,21 +97,22 @@ def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
   # History Prompt
   prompt = [f"Question: {q}\nAnswer: {a}\n" for [q, a] in history]
   query = "".join(prompt) + f'Question: {query}\nAnswer: '
+  print(query)
   res = chain(query)
   answer, answer_refs = res["result"], res["source_documents"]
-  print(f"Time taken: {time() - start} seconds")
   for document in answer_refs:
     print("\n> " + document.metadata["source"])
+  print(f"Time taken: {time() - start} seconds\n")
 
   # output similarity
   start = time()
   output_refs = db.search(answer, search_type="similarity")
-  print(f"Time taken: {time() - start} seconds")
-  for document in output_refs:
-    print("\n> " + document.metadata["source"])
 
   # Print the result
-  print(query + answer)
+  for document in output_refs:
+    print("\n> " + document.metadata["source"])
+  print(f"Time taken: {time() - start} seconds\n")
+  print(query + answer + '\n')
   return (input_refs, answer_refs, answer, output_refs)
 
 
