@@ -71,7 +71,6 @@ def load_model(
 
 
 def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
-  print(f"Running on: {device}")
   if embeddings is None:
     embeddings = load_embeddings(device)
   if db is None:

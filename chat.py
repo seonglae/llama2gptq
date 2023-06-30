@@ -9,6 +9,8 @@ from src.qa import qa
 
 DEVICE = 'cuda'
 TITLE = 'Angry Face'
+HUG = 'https://em-content.zobj.net/source/microsoft-teams/363/hugging-face_1f917.png'
+ANGRY = 'https://em-content.zobj.net/source/microsoft-teams/363/pouting-face_1f621.png'
 
 
 st.set_page_config(page_title=TITLE)
@@ -85,5 +87,6 @@ if user_input:
 
 if st.session_state['generated']:
   for i, _ in enumerate(st.session_state['generated']):
-    message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
-    message(st.session_state["answers"][i], key=str(i), seed=13)
+    message(st.session_state['past'][i], is_user=True,
+            key=str(i) + '_user', logo=HUG)
+    message(st.session_state["answers"][i], key=str(i), logo=ANGRY)
