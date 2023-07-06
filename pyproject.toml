@@ -13,7 +13,7 @@ dependencies = [
     "auto_gptq~=0.2.2",
     "einops~=0.6.1",
     "fire~=0.5.0",
-    "streamlit-chat~=0.1.1.0",
+    "streamlit-chat~=0.1.1",
 ]
 description = "People who are Angry face now because of $20 GPT-4"
 license = {text = "MIT"}
