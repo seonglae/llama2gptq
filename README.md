@@ -20,12 +20,16 @@ This project is using [rye](https://mitsuhiko.github.io/rye/) as package manager
 
 ```
 rye sync
+```
 
-# For cuda support
+or using pip
+
+```
 CUDA_VERSION=cu118
 TORCH_VERSION=2.0.1
 pip install torch==$TORCH_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION --force
 pip install torch==$TORCH_VERSION --index-url https://download.pytorch.org/whl/$CUDA_VERSION
+pip install .
 ```
 
 ## Run

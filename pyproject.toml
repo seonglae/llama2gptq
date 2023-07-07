@@ -9,7 +9,7 @@ dependencies = [
     "InstructorEmbedding~=1.0.1",
     "sentence_transformers~=2.2.2",
     "unstructured~=0.7.12",
-    "torch~=2.0.1",
+    "torch>=2.0.1",
     "auto_gptq~=0.2.2",
     "einops~=0.6.1",
     "fire~=0.5.0",
@@ -34,3 +34,8 @@ dev-dependencies = [
     "setuptools~=68.0.0",
 ]
 managed = true
+
+[[tool.rye.sources]]
+name = "cuda"
+url = "https://download.pytorch.org/whl/cu118"
+type = "index"
