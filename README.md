@@ -17,6 +17,7 @@ This project is POC project for [Texomata](https://github.com/texonom/texomata) 
 ## Install
 
 This project is using [rye](https://mitsuhiko.github.io/rye/) as package manager
+Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
 
 ```
 rye sync
@@ -32,23 +33,9 @@ pip install torch==$TORCH_VERSION --index-url https://download.pytorch.org/whl/$
 pip install .
 ```
 
-## Run
+## QA
 
-Currently only available with [CUDA](https://texonom.com/a9e934a523d346c5a984d95e3d0676e3)
-
-1. Ingest documents
-2. QA to Chat AI
-
-### 1. Ingest
-
-```zsh
-# Put document files to ./knowledge folder
-python main.py ingest
-# Or use provided Texonom DB
-git clone https://huggingface.co/datasets/texonom/angryface db
-```
-
-### 2. Chat with Web UI
+### 1. Chat with Web UI
 
 ```zsh
 streamlit run chat.py
@@ -58,6 +45,19 @@ streamlit run chat.py
 
 ```zsh
 python main.py chat
+```
+
+## Ingest
+
+Currently code structure is mainly focussed on Notion's csv exported data
+
+### Custom source documents
+
+```zsh
+# Put document files to ./knowledge folder
+python main.py ingest
+# Or use provided Texonom DB
+git clone https://huggingface.co/datasets/texonom/angryface db
 ```
 
 ## Future Plan
