@@ -7,7 +7,7 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
@@ -35,7 +35,12 @@ def load_model(
     model_type="gptq",
 ):
   assert device == "cuda"
-  tokenizer = AutoTokenizer.from_pretrained(
+
+  if model_type == "llama":
+    tokenizer = LlamaTokenizer.from_pretrained(
+      model_id, use_fast=True)
+  else:
+    tokenizer = AutoTokenizer.from_pretrained(
       model_id, use_fast=True)
 
   if model_type == "gptq":
