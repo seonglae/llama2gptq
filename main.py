@@ -2,6 +2,7 @@ import fire
 
 from src.ingest import ingest
 from src.qa import chat_cli
+from src.quantize import quantization
 from constants import (SOURCE_DIRECTORY, PERSIST_DIRECTORY)
 
 
@@ -12,6 +13,11 @@ def chat(device: str = "cuda") -> str:
 
 def process(src_dir: str = SOURCE_DIRECTORY, dst_dir: str = PERSIST_DIRECTORY, device: str = "cuda") -> str:
   return ingest(src_dir, dst_dir, device)
+
+
+def quantize(model: str = "allenai/tulu-7b", output: str = "tulu-7b-4bit-gptq", push: bool = True, owner: str = 'seonglae') -> str:
+  quantization(model, output, push, owner)
+  return 'complete'
 
 
 if __name__ == '__main__':

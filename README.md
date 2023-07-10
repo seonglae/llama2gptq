@@ -47,7 +47,7 @@ streamlit run chat.py
 python main.py chat
 ```
 
-## Ingest
+## Ingest Documents
 
 Currently code structure is mainly focussed on Notion's csv exported data
 
@@ -58,6 +58,14 @@ Currently code structure is mainly focussed on Notion's csv exported data
 python main.py ingest
 # Or use provided Texonom DB
 git clone https://huggingface.co/datasets/texonom/angryface db
+```
+
+## Quantize Model
+
+Default model is orca 3b for now
+
+```zsh
+python main quantize --source_model facebook/opt-125m --output opt-125m-4bit-gptq --push
 ```
 
 ## Future Plan
