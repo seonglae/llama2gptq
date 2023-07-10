@@ -7,7 +7,7 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaTokenizer
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
@@ -38,10 +38,10 @@ def load_model(
 
   if model_type == "llama":
     tokenizer = LlamaTokenizer.from_pretrained(
-      model_id, use_fast=True)
+        model_id, use_fast=True)
   else:
     tokenizer = AutoTokenizer.from_pretrained(
-      model_id, use_fast=True)
+        model_id, use_fast=True)
 
   if model_type == "gptq":
     model = AutoGPTQForCausalLM.from_quantized(
@@ -51,6 +51,13 @@ def load_model(
         trust_remote_code=True,
         device='cuda:0',
         use_triton=False
+    )
+  elif model_type == "llama":
+    model = LlamaForCausalLM.from_pretrained(
+        model_id,
+        device_map='cuda:0',
+        torch_dtype=torch.float16,
+        trust_remote_code=True,
     )
   elif model_type == "auto":
     model = AutoModelForCausalLM.from_pretrained(
@@ -67,15 +74,19 @@ def load_model(
       model=model,
       tokenizer=tokenizer,
       max_length=2048,
-      temperature=0.01,
+      temperature=0.5,
       top_p=0.95,
-      repetition_penalty=1.5,
+      repetition_penalty=1.15,
   )
   llm = HuggingFacePipeline(pipeline=pipe)
   return llm
 
 
-def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
+def qa(query, device, db, embeddings, llm, history: List[List[str]],
+       user_token="Question: ",
+       bot_token="Answer: ",
+       sys_token="",
+       system="") -> Tuple:
   if embeddings is None:
     embeddings = load_embeddings(device)
   if db is None:
@@ -85,13 +96,16 @@ def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
 
   # input similarity
   start = time()
+  prompt = [f"{user_token}{q}\n{bot_token}{a}\n" for [q, a] in history]
+  query = f"{sys_token}{system}" + \
+      "".join(prompt) + f'{user_token}{query}\n{bot_token}'
   input_refs = db.search(query, search_type="similarity")
   for document in input_refs:
     print("\n> " + document.metadata["source"])
-  print(f"Time taken: {time() - start} seconds\n")
+  print("Conversation Refs\n")
+  print(query)
 
   # Inference
-  start = time()
   retriever = Chroma.from_documents(input_refs, embeddings).as_retriever()
   chain = RetrievalQA.from_chain_type(
       llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True,
@@ -99,24 +113,22 @@ def qa(query, device, db, embeddings, llm, history: List[List[str]]) -> Tuple:
   )
 
   # History Prompt
-  prompt = [f"Question: {q}\nAnswer: {a}\n" for [q, a] in history]
-  query = "".join(prompt) + f'Question: {query}\nAnswer: '
-  print(query)
   res = chain(query)
   answer, answer_refs = res["result"], res["source_documents"]
   for document in answer_refs:
     print("\n> " + document.metadata["source"])
-  print(f"Time taken: {time() - start} seconds\n")
+  print("Filtered Refs\n")
 
   # output similarity
-  start = time()
   output_refs = db.search(answer, search_type="similarity")
 
   # Print the result
   for document in output_refs:
     print("\n> " + document.metadata["source"])
+  print("Answer Refs\n")
   print(f"Time taken: {time() - start} seconds\n")
   print(query + answer + '\n')
+
   return (input_refs, answer_refs, answer, output_refs)
 
 

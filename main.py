@@ -15,8 +15,11 @@ def process(src_dir: str = SOURCE_DIRECTORY, dst_dir: str = PERSIST_DIRECTORY, d
   return ingest(src_dir, dst_dir, device)
 
 
-def quantize(model: str = "allenai/tulu-7b", output: str = "tulu-7b-4bit-gptq", push: bool = True, owner: str = 'seonglae') -> str:
-  quantization(model, output, push, owner)
+def quantize(model: str = "allenai/tulu-7b",
+             output: str = "tulu-7b-4bit-gptq",
+             push: bool = True, owner: str = 'seonglae',
+             inference_only: bool = False) -> str:
+  quantization(model, output, push, owner, inference_only)
   return 'complete'
 
 
