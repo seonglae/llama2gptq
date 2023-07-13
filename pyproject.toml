@@ -3,12 +3,12 @@ authors = [
   {name = "seonglae", email = "sungle3737@gmail.com"},
 ]
 dependencies = [
-    "langchain~=0.0.225",
-    "chromadb~=0.3.26",
+    "langchain~=0.0.232",
+    "chromadb~=0.3.29",
     "transformers~=4.30.2",
     "InstructorEmbedding~=1.0.1",
     "sentence_transformers~=2.2.2",
-    "unstructured~=0.7.12",
+    "unstructured~=0.8.1",
     "torch>=2.0.1",
     "auto_gptq~=0.2.2",
     "einops~=0.6.1",
