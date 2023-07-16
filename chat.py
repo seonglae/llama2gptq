@@ -4,7 +4,7 @@ import torch
 import streamlit as st
 from streamlit_chat import message
 
-from src.qa import qa
+from src.qa import qa, load_model, load_db
 
 
 DEVICE = 'cuda'
@@ -19,6 +19,13 @@ st.markdown('''
 ### Ask anythig to [Texonom](https://texonom.com).
 Question for recently learned
 ''', unsafe_allow_html=True)
+
+
+@st.cache_resource
+def load_transformer():
+  return (load_model(DEVICE), load_db(DEVICE))
+
+transformer, db = load_transformer()
 
 styl = """
 <style>
@@ -57,11 +64,9 @@ def query(query):
     history.append([st.session_state['past'][i],
                    st.session_state["generated"][i]])
 
-  _, answer_refs, answer, output_refs = qa(
-      query, DEVICE, None, None, None, history)
+  answer, refs = qa(query, DEVICE, db, transformer, history)
 
   # Append references
-  refs = answer_refs + output_refs
   ref_set = {split(r"\\|/", ref.metadata["source"])[-1] for ref in refs}
   st.session_state.generated.append(answer)
 
