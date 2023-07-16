@@ -33,8 +33,7 @@ def quantization(source_model: str, output: str, push: bool, owner: str, inferen
   # load quantized model to the first GPU
   model = AutoGPTQForCausalLM.from_quantized(
       output,
-      device="cuda:0",
-      use_safetensors=True,
+      device="cuda:0"
   )
 
   # inference with model.generate
@@ -47,7 +46,7 @@ def quantization(source_model: str, output: str, push: bool, owner: str, inferen
   # push quantized model to Hugging Face Hub.
   # to use use_auth_token=True, Login first via huggingface-cli login.
   # or pass explcit token with: use_auth_token="hf_xxxxxxx"
-  if push:
+  if push and not inference_only:
     commit_message = f"build: AutoGPTQ for {source_model}" + \
         f": {quantize_config.bits}bits, gr{quantize_config.group_size}, desc_act={quantize_config.desc_act}"
     generation_config = GenerationConfig.from_pretrained(source_model)

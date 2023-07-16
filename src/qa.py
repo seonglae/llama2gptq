@@ -2,12 +2,10 @@ from time import time
 from typing import Tuple, List
 
 import torch
-from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceInstructEmbeddings
 from langchain.llms import HuggingFacePipeline
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer, Pipeline
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
@@ -20,7 +18,9 @@ def load_embeddings(device):
   return embeddings
 
 
-def load_db(embeddings):
+def load_db(device, embeddings=None):
+  if embeddings is None:
+    embeddings = load_embeddings(device)
   db = Chroma(
       persist_directory=PERSIST_DIRECTORY,
       embedding_function=embeddings,
@@ -30,8 +30,8 @@ def load_db(embeddings):
 
 
 def load_model(
-    device: str, model_id="TheBloke/WizardLM-7B-uncensored-GPTQ",
-    model_basename="WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order",
+    device: str, model_id="seonglae/wizardlm-7b-uncensored-gptq",
+    model_basename="gptq_model-4bit-128g",
     model_type="gptq",
 ):
   assert device == "cuda"
@@ -47,7 +47,6 @@ def load_model(
     model = AutoGPTQForCausalLM.from_quantized(
         model_id,
         model_basename=model_basename,
-        use_safetensors=True,
         trust_remote_code=True,
         device='cuda:0',
         use_triton=False
@@ -68,84 +67,72 @@ def load_model(
         trust_remote_code=True,
     )
     model.tie_weights()
+  model.eval()
 
-  pipe = pipeline(
+  transformer = pipeline(
       "text-generation",
       model=model,
       tokenizer=tokenizer,
-      max_length=2048,
       temperature=0.5,
       top_p=0.95,
+      max_new_tokens=100,
       repetition_penalty=1.15,
   )
-  llm = HuggingFacePipeline(pipeline=pipe)
-  return llm
+  return transformer
 
 
-def qa(query, device, db, embeddings, llm, history: List[List[str]],
-       user_token="Question: ",
-       bot_token="Answer: ",
+@torch.no_grad()
+def qa(query, device, db, transformer: Pipeline, history: List[List[str]],
+       user_token="USER: ",
+       bot_token="ASSISTANT: ",
        sys_token="",
        system="") -> Tuple:
-  if embeddings is None:
-    embeddings = load_embeddings(device)
+  start = time()
+
   if db is None:
-    db = load_db(embeddings)
-  if llm is None:
-    llm = load_model(device)
+    embeddings = load_embeddings(device)
+    db = load_db(device, embeddings)
+  if transformer is None:
+    transformer = load_model(device)
 
   # input similarity
-  start = time()
   prompt = [f"{user_token}{q}\n{bot_token}{a}\n" for [q, a] in history]
   query = f"{sys_token}{system}" + \
       "".join(prompt) + f'{user_token}{query}\n{bot_token}'
-  input_refs = db.search(query, search_type="similarity")
-  for document in input_refs:
-    print("\n> " + document.metadata["source"])
   print("Conversation Refs\n")
   print(query)
 
   # Inference
-  retriever = Chroma.from_documents(input_refs, embeddings).as_retriever()
-  chain = RetrievalQA.from_chain_type(
-      llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True,
-      callbacks=[StreamingStdOutCallbackHandler()],
-  )
-
-  # History Prompt
-  res = chain(query)
-  answer, answer_refs = res["result"], res["source_documents"]
-  for document in answer_refs:
-    print("\n> " + document.metadata["source"])
-  print("Filtered Refs\n")
+  response = transformer(query)[0]["generated_text"]
+  answer = response.replace(query, "").strip()
 
   # output similarity
-  output_refs = db.search(answer, search_type="similarity")
+  answer_refs = db.search(query + answer, search_type="similarity")
 
   # Print the result
-  for document in output_refs:
+  for document in answer_refs:
     print("\n> " + document.metadata["source"])
   print("Answer Refs\n")
   print(f"Time taken: {time() - start} seconds\n")
   print(query + answer + '\n')
 
-  return (input_refs, answer_refs, answer, output_refs)
+  return (answer, answer_refs)
 
 
-def qa_cli(device, db, embeddings, llm, history) -> Tuple:
+def qa_cli(device, db, llm, history) -> Tuple:
   query = input("\nQuestion: ")
   if query == "exit":
     return ()
-  return (query, *qa(query, device, db, embeddings, llm, history))
+  return (query, *qa(query, device, db, llm, history))
 
 
 def chat_cli(device='cuda'):
   embeddings = load_embeddings(device)
-  db = load_db(embeddings)
-  llm = load_model(device)
+  db = load_db(device, embeddings)
+  transformer = load_model(device)
 
   pingongs = []
   while True:
-    history = [[pingpong[0], pingpong[3]] for pingpong in pingongs]
-    pingongs.append(qa_cli(device, db, embeddings, llm, history))
+    history = [[pingpong[0], pingpong[1]] for pingpong in pingongs]
+    pingongs.append(qa_cli(device, db, transformer, history))
   return pingongs
