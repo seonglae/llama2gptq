@@ -49,7 +49,8 @@ def load_model(
         model_basename=model_basename,
         trust_remote_code=True,
         device='cuda:0',
-        use_triton=False
+        use_triton=False,
+        use_safetensors=True,
     )
   elif model_type == "llama":
     model = LlamaForCausalLM.from_pretrained(

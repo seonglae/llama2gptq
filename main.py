@@ -17,7 +17,7 @@ def process(src_dir: str = SOURCE_DIRECTORY, dst_dir: str = PERSIST_DIRECTORY, d
 
 def quantize(model: str = "ehartford/WizardLM-7B-Uncensored",
              output: str = "wizardlm-7b-uncensored-gptq",
-             push: bool = True, owner: str = 'seonglae',
+             push: bool = False, owner: str = 'seonglae',
              inference_only: bool = False) -> str:
   quantization(model, output, push, owner, inference_only)
   return 'complete'

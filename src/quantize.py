@@ -3,7 +3,8 @@ from transformers import AutoTokenizer, TextGenerationPipeline, GenerationConfig
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
 
-def quantization(source_model: str, output: str, push: bool, owner: str, inference_only: bool = True):
+def quantization(source_model: str, output: str, push: bool, owner: str,
+                 inference_only=True, safetensor=True):
   logging.basicConfig(
       format="%(asctime)s %(levelname)s [%(name)s] %(message)s", level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S"
   )
@@ -18,7 +19,7 @@ def quantization(source_model: str, output: str, push: bool, owner: str, inferen
   quantize_config = BaseQuantizeConfig(
       bits=4,  # quantize model to 4-bit
       group_size=128,  # it is recommended to set the value to 128
-      desc_act=False,  # set to False can significantly speed up inference but the perplexity may slightly bad
+      desc_act=False,  # None act-order can significantly speed up inference but the perplexity may slightly bad
   )
 
   # quantize model, the examples should be list of dict whose keys can only be "input_ids" and "attention_mask"
@@ -27,25 +28,24 @@ def quantization(source_model: str, output: str, push: bool, owner: str, inferen
     model = AutoGPTQForCausalLM.from_pretrained(
         source_model, quantize_config)
     model.quantize(examples)
-    model.save_quantized(output)
-    model.save_quantized(output, use_safetensors=True)
+    model.save_quantized(output, use_safetensors=safetensor)
 
   # load quantized model to the first GPU
-  model = AutoGPTQForCausalLM.from_quantized(
+  quantized = AutoGPTQForCausalLM.from_quantized(
       output,
-      device="cuda:0"
+      device="cuda:0",
+      use_safetensors=safetensor
   )
 
   # inference with model.generate
   query = "USER: Are you AI? Say yes or no.\n ASSISTANT:"
 
   # or you can also use pipeline
-  pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer)
+  pipeline = TextGenerationPipeline(model=quantized, tokenizer=tokenizer)
   print(pipeline(query)[0]["generated_text"])
 
   # push quantized model to Hugging Face Hub.
   # to use use_auth_token=True, Login first via huggingface-cli login.
-  # or pass explcit token with: use_auth_token="hf_xxxxxxx"
   if push and not inference_only:
     commit_message = f"build: AutoGPTQ for {source_model}" + \
         f": {quantize_config.bits}bits, gr{quantize_config.group_size}, desc_act={quantize_config.desc_act}"
@@ -53,7 +53,5 @@ def quantization(source_model: str, output: str, push: bool, owner: str, inferen
     generation_config.push_to_hub(
         output, use_auth_token=True, commit_message=commit_message)
     repo_id = f"{owner}/{output}"
-    tokenizer.push_to_hub(output, save_dir=output,
-                          use_auth_token=True, commit_message=commit_message)
-    model.push_to_hub(repo_id, save_dir=output, use_safetensors=True,
+    quantized.push_to_hub(repo_id, save_dir=output, use_safetensors=safetensor,
                       commit_message=commit_message, use_auth_token=True)
