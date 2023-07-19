@@ -15,11 +15,11 @@ def process(src_dir: str = SOURCE_DIRECTORY, dst_dir: str = PERSIST_DIRECTORY, d
   return ingest(src_dir, dst_dir, device)
 
 
-def quantize(model: str = "ehartford/WizardLM-7B-Uncensored",
-             output: str = "wizardlm-7b-uncensored-gptq",
+def quantize(model: str = "meta-llama/Llama-2-7b-chat-hf",
+             output: str = "llama-2-7b-chat-hf-gptq",
              push: bool = False, owner: str = 'seonglae',
-             inference_only: bool = False) -> str:
-  quantization(model, output, push, owner, inference_only)
+             safetensor = False, inference_only: bool = False) -> str:
+  quantization(model, output, push, owner, safetensor, inference_only)
   return 'complete'
 
 

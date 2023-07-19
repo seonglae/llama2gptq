@@ -1,15 +1,15 @@
 import logging
-from transformers import AutoTokenizer, TextGenerationPipeline, GenerationConfig
+from transformers import AutoTokenizer, TextGenerationPipeline, GenerationConfig, LlamaTokenizer
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
 
 def quantization(source_model: str, output: str, push: bool, owner: str,
-                 inference_only=True, safetensor=True):
+                 safetensor=False, inference_only=False):
   logging.basicConfig(
       format="%(asctime)s %(levelname)s [%(name)s] %(message)s", level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S"
   )
 
-  tokenizer = AutoTokenizer.from_pretrained(source_model, use_fast=True)
+  tokenizer = AutoTokenizer.from_pretrained(source_model, use_fast=True, use_auth_token=True)
   examples = [
       tokenizer(
           "Angryface is an AI assistant that can help you with your daily tasks."
