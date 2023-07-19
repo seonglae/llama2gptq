@@ -9,9 +9,21 @@ Angry for priceless AI products. pursuing local, private and personal AI who stu
 This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT) and so on.
 This project is POC project for [Texomata](https://github.com/texonom/texomata) (browser chat AI). Currently CLO, web UI supports only.
 
+# Demos
+
+### CLI Demo
+
+<video controls width="600">
+  <source src="img/cli.mp4" type="video/mp4">
+</video>
+### Chat Demo
+
+<video controls width="600">
+  <source src="img/chat.mp4" type="video/mp4">
+</video>
+
 ![Chat Image](img/chat.png)
 
-<figcaption align = "center"><b>may differ from the actual page</b></figcaption>
 <br/>
 
 ## Install

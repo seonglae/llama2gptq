@@ -25,6 +25,7 @@ Question for recently learned
 def load_transformer():
   return (load_model(DEVICE), load_db(DEVICE))
 
+
 transformer, db = load_transformer()
 
 styl = """
@@ -45,6 +46,13 @@ styl = """
     }
 </style>
 """
+
+BTN_STYLE = """
+color: #aaa;
+padding-right: 0.5rem;
+"""
+
+
 st.markdown(styl, unsafe_allow_html=True)
 
 if 'generated' not in st.session_state:
@@ -70,9 +78,14 @@ def query(query):
   ref_set = {split(r"\\|/", ref.metadata["source"])[-1] for ref in refs}
   st.session_state.generated.append(answer)
 
+  # Generate HTML
+  answer += '<hr style="border: 1px solid #424242;"> References: '
   for ref in ref_set:
     slug = split(r" |.md", ref)[-2]
-    answer += f"\n> https://texonom.com/{slug}"
+    title = ref.replace(slug, "")[:-4]
+    link = f"https://texonom.com/{slug}"
+    btn = f"<a href='{link}' style='{BTN_STYLE}'>{title}</a>"
+    answer += btn
 
   st.session_state.answers.append(answer)
   return answer
@@ -94,4 +107,5 @@ if st.session_state['generated']:
   for i, _ in enumerate(st.session_state['generated']):
     message(st.session_state['past'][i], is_user=True,
             key=str(i) + '_user', logo=HUG)
-    message(st.session_state["answers"][i], key=str(i), logo=ANGRY)
+    message(st.session_state["answers"][i],
+            key=str(i), logo=ANGRY, allow_html=True)
