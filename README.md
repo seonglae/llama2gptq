@@ -1,28 +1,22 @@
 # Angryface
 
-Angry for priceless AI products. pursuing local, private and personal AI who studies and answers using your own documents.
+Chat AI which can provide responses with reference documents by Prompt engineering over vector database. It suggests related web pages provided through the integration with my previous product, Texonom.
 
 <p align="center">
 <img src="img/angryface.png" style="width: 150px"/>
 </p>
 
-This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT) and so on.
-This project is POC project for [Texomata](https://github.com/texonom/texomata) (browser chat AI). Currently CLO, web UI supports only.
+Pursuing local, private and personal AI without requesting external API attained by optimizing inference performance with GPTQ model quantization. This project was inspired by the [langchain](https://github.com/hwchase17/langchain) projects like [notion-qa](https://github.com/hwchase17/notion-qa), [localGPT](https://github.com/PromtEngineer/localGPT).
 
 # Demos
 
 ### CLI Demo
 
-<video controls width="600">
-  <source src="img/cli.mp4" type="video/mp4">
-</video>
+https://github.com/seonglae/angryface/assets/27716524/dba5cd39-ea5c-44d9-bf29-2e8f04039413
+
 ### Chat Demo
 
-<video controls width="600">
-  <source src="img/chat.mp4" type="video/mp4">
-</video>
-
-![Chat Image](img/chat.png)
+https://github.com/seonglae/angryface/assets/27716524/258de629-0b61-4670-b76b-9f2357adf4c7
 
 <br/>
 
