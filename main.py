@@ -1,8 +1,8 @@
 import fire
 
-from src.ingest import ingest
-from src.qa import chat_cli
-from src.quantize import quantization
+from angryface.ingest import ingest
+from angryface.qa import chat_cli
+from angryface.quantize import quantization
 from constants import (SOURCE_DIRECTORY, PERSIST_DIRECTORY)
 
 
@@ -15,8 +15,8 @@ def process(src_dir: str = SOURCE_DIRECTORY, dst_dir: str = PERSIST_DIRECTORY, d
   return ingest(src_dir, dst_dir, device)
 
 
-def quantize(model: str = "meta-llama/Llama-2-7b-chat-hf",
-             output: str = "llama-2-7b-chat-hf-gptq",
+def quantize(model: str = "meta-llama/Llama-2-13b-chat-hf",
+             output: str = "llama-2-13b-chat-hf-gptq",
              push: bool = False, owner: str = 'seonglae',
              safetensor = False, inference_only: bool = False) -> str:
   quantization(model, output, push, owner, safetensor, inference_only)

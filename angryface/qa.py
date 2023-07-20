@@ -4,8 +4,8 @@ from typing import Tuple, List
 import torch
 from transformers import Pipeline
 
-
-from src.generate import load_embeddings, load_db, load_model, TokenStoppingCriteria
+from angryface.ingest import extract_ref
+from angryface.generate import load_embeddings, load_db, load_model, TokenStoppingCriteria
 
 
 @torch.no_grad()
@@ -13,7 +13,8 @@ def qa(query, device, db, transformer: Pipeline, history: List[List[str]],
        user_token="USER: ",
        bot_token="ASSISTANT: ",
        sys_token="",
-       system="") -> Tuple:
+       system="",
+       extract_ref=extract_ref) -> Tuple:
   start = time()
 
   if db is None:
@@ -23,28 +24,34 @@ def qa(query, device, db, transformer: Pipeline, history: List[List[str]],
     transformer = load_model(device)
 
   # input similarity
-  prompt = [f"{user_token}{q}\n{bot_token}{a}\n" for [q, a] in history]
-  query = f"{sys_token}{system}" + \
-      "".join(prompt) + f'{user_token}{query}\n{bot_token}'
-  print(query)
+  conversation = [f"{user_token}{q}\n{bot_token}{a}\n" for [q, a] in history]
+  prompt = f"{sys_token}{system}" + \
+      "".join(conversation) + f'{user_token}{query}\n{bot_token}'
+  print(prompt)
 
   # Inference
-  criteria = TokenStoppingCriteria(user_token, query, transformer.tokenizer)
-  response = transformer(query, stopping_criteria=criteria)[
+  criteria = TokenStoppingCriteria(
+      user_token.strip(), prompt, transformer.tokenizer)
+  response = transformer(prompt, stopping_criteria=criteria)[
       0]["generated_text"]
-  answer = response.replace(query, "").strip()
+  answer = response.replace(prompt, "").strip()
 
   # output similarity
-  answer_refs = db.search(query + answer, search_type="similarity")
+  refs = db.similarity_search_with_relevance_scores(
+      f'{user_token}{query}\n{bot_token}', search_type="similarity")
+  print([ref[1] for ref in refs])
+  refs = [ref[0] for ref in refs]
 
   # Print the result
-  for document in answer_refs:
-    print("\n> " + document.metadata["source"])
-  print("Answer Refs\n")
-  print(f"Time taken: {time() - start} seconds\n")
-  print(query + answer + '\n')
+  print('\nHelpful links\n')
+  for ref in refs:
+    ref_info = extract_ref(ref)
+    print(f"{ref_info['title']}: {ref_info['link']}")
 
-  return (answer, answer_refs)
+  print(f"\nTime taken: {time() - start} seconds\n")
+  print(prompt + answer + '\n')
+
+  return (answer, refs)
 
 
 def qa_cli(device, db, llm, history) -> Tuple:

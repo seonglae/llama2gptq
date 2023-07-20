@@ -4,8 +4,8 @@ import torch
 import streamlit as st
 from streamlit_chat import message
 
-from src.qa import qa, load_model, load_db
-
+from angryface.qa import qa, load_model, load_db
+from angryface.ingest import extract_ref
 
 DEVICE = 'cuda'
 TITLE = 'Angry Face'
@@ -75,16 +75,13 @@ def query(query):
   answer, refs = qa(query, DEVICE, db, transformer, history)
 
   # Append references
-  ref_set = {split(r"\\|/", ref.metadata["source"])[-1] for ref in refs}
   st.session_state.generated.append(answer)
 
   # Generate HTML
   answer += '<hr style="border: 1px solid #424242;"> References: '
-  for ref in ref_set:
-    slug = split(r" |.md", ref)[-2]
-    title = ref.replace(slug, "")[:-4]
-    link = f"https://texonom.com/{slug}"
-    btn = f"<a href='{link}' style='{BTN_STYLE}'>{title}</a>"
+  for ref in refs:
+    ref_info = extract_ref(ref)
+    btn = f"<a href='{ref_info['link']}' style='{BTN_STYLE}'>{ref_info['title']}</a>"
     answer += btn
 
   st.session_state.answers.append(answer)

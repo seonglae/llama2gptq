@@ -1,4 +1,5 @@
 import os
+from re import split
 from typing import List, Type, Dict
 from pathlib import Path
 
@@ -41,6 +42,14 @@ def load_documents(folder_path: str) -> List[Document]:
     else:
       continue
   return documents
+
+
+def extract_ref(ref: Document) -> Dict[str, str]:
+  source = split(r"\\|/", ref.metadata["source"])[-1]
+  slug = split(r" |.md", source)[-2]
+  title = source.replace(slug, "")[:-4]
+  link = f"https://texonom.com/{slug}"
+  return {"title": title, "link": link}
 
 
 def ingest(source: str, output: str, device='cuda'):

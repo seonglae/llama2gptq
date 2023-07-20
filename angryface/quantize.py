@@ -1,5 +1,5 @@
 import logging
-from transformers import AutoTokenizer, TextGenerationPipeline, GenerationConfig, LlamaTokenizer
+from transformers import AutoTokenizer, TextGenerationPipeline, GenerationConfig, LlamaTokenizer, LlamaTokenizerFast
 from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
 
@@ -9,7 +9,8 @@ def quantization(source_model: str, output: str, push: bool, owner: str,
       format="%(asctime)s %(levelname)s [%(name)s] %(message)s", level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S"
   )
 
-  tokenizer = AutoTokenizer.from_pretrained(source_model, use_fast=True, use_auth_token=True)
+  tokenizer = AutoTokenizer.from_pretrained(
+      source_model, use_fast=True, use_auth_token=True)
   examples = [
       tokenizer(
           "Angryface is an AI assistant that can help you with your daily tasks."
@@ -26,7 +27,7 @@ def quantization(source_model: str, output: str, push: bool, owner: str,
   if not inference_only:
     # load un-quantized model, by default, the model will always be loaded into CPU memory
     model = AutoGPTQForCausalLM.from_pretrained(
-        source_model, quantize_config)
+        source_model, quantize_config, use_safetensors=safetensor)
     model.quantize(examples)
     model.save_quantized(output, use_safetensors=safetensor)
 
@@ -52,6 +53,8 @@ def quantization(source_model: str, output: str, push: bool, owner: str,
     generation_config = GenerationConfig.from_pretrained(source_model)
     generation_config.push_to_hub(
         output, use_auth_token=True, commit_message=commit_message)
+    tokenizer.push_to_hub(output, use_auth_token=True,
+                          commit_message=commit_message)
     repo_id = f"{owner}/{output}"
-    quantized.push_to_hub(repo_id, save_dir=output, use_safetensors=safetensor,
-                      commit_message=commit_message, use_auth_token=True)
+    quantized.push_to_hub(repo_id, use_safetensors=safetensor,
+                          commit_message=commit_message, use_auth_token=True)

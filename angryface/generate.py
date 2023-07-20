@@ -1,7 +1,7 @@
 import torch
 from langchain.embeddings import HuggingFaceInstructEmbeddings
-from langchain.vectorstores import Chroma
-from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer, StoppingCriteria, PreTrainedTokenizerBase
+from langchain.vectorstores import Chroma, VectorStore
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer, StoppingCriteria, PreTrainedTokenizerBase, LlamaTokenizerFast
 from auto_gptq import AutoGPTQForCausalLM
 
 from constants import CHROMA_SETTINGS, PERSIST_DIRECTORY
@@ -14,7 +14,7 @@ def load_embeddings(device):
   return embeddings
 
 
-def load_db(device, embeddings=None):
+def load_db(device, embeddings=None) -> VectorStore:
   if embeddings is None:
     embeddings = load_embeddings(device)
   db = Chroma(
@@ -26,19 +26,21 @@ def load_db(device, embeddings=None):
 
 
 class TokenStoppingCriteria(StoppingCriteria):
-  def __init__(self, target_sequence, prompt, tokenizer: PreTrainedTokenizerBase):
+  def __init__(self, target_sequence, prompt, tokenizer: PreTrainedTokenizerBase, token_length=3):
     super().__init__()
     self.target_sequence = target_sequence
     self.prompt = prompt
     self.tokenizer: PreTrainedTokenizerBase = tokenizer
+    self.token_length = token_length
 
   def __call__(self, input_ids, scores, **kwargs):
     generated_text = self.tokenizer.decode(input_ids[0])
     generated_text = generated_text.replace(self.prompt, "")
-    print(generated_text)
     if self.target_sequence in generated_text:
-      input_ids[0][-2] = self.tokenizer.bos_token_id
+      for i in range(self.token_length):
+        input_ids[0][-(i+1)] = self.tokenizer.eos_token_id
       return True
+    print(generated_text)
     return False  # Continue generation
 
   def __len__(self):
@@ -49,7 +51,7 @@ class TokenStoppingCriteria(StoppingCriteria):
 
 
 def load_model(
-    device: str, model_id="seonglae/wizardlm-7b-uncensored-gptq",
+    device: str, model_id="seonglae/llama-2-7b-chat-hf-gptq",
     model_basename="gptq_model-4bit-128g",
     model_type="gptq",
 ):
@@ -69,7 +71,6 @@ def load_model(
         trust_remote_code=True,
         device='cuda:0',
         use_triton=False,
-        use_safetensors=True,
     )
   elif model_type == "llama":
     model = LlamaForCausalLM.from_pretrained(
