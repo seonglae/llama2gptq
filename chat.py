@@ -4,11 +4,11 @@ import torch
 import streamlit as st
 from streamlit_chat import message
 
-from angryface.qa import qa, load_model, load_db
-from angryface.ingest import extract_ref
+from llama2gptq.qa import qa, load_model, load_db
+from llama2gptq.ingest import extract_ref
 
 DEVICE = 'cuda'
-TITLE = 'Angry Face'
+TITLE = 'LLaMa2 GPTQ'
 HUG = 'https://em-content.zobj.net/source/microsoft-teams/363/hugging-face_1f917.png'
 ANGRY = 'https://em-content.zobj.net/source/microsoft-teams/363/pouting-face_1f621.png'
 

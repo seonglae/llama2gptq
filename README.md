@@ -1,4 +1,4 @@
-# Angryface
+# LLaMa2 GPTQ
 
 Chat AI which can provide responses with reference documents by Prompt engineering over vector database. It suggests related web pages provided through the integration with my previous product, Texonom.
 
@@ -12,11 +12,11 @@ Pursuing local, private and personal AI without requesting external API attained
 
 ### CLI Demo
 
-https://github.com/seonglae/angryface/assets/27716524/dba5cd39-ea5c-44d9-bf29-2e8f04039413
+https://github.com/seonglae/llama2gptq/assets/27716524/dba5cd39-ea5c-44d9-bf29-2e8f04039413
 
 ### Chat Demo
 
-https://github.com/seonglae/angryface/assets/27716524/258de629-0b61-4670-b76b-9f2357adf4c7
+https://github.com/seonglae/llama2gptq/assets/27716524/258de629-0b61-4670-b76b-9f2357adf4c7
 
 <br/>
 
@@ -63,7 +63,7 @@ Currently code structure is mainly focussed on Notion's csv exported data
 # Put document files to ./knowledge folder
 python main.py ingest
 # Or use provided Texonom DB
-git clone https://huggingface.co/datasets/texonom/angryface db
+git clone https://huggingface.co/datasets/texonom/texonom-md db
 ```
 
 ## Quantize Model

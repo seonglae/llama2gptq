@@ -4,8 +4,8 @@ from typing import Tuple, List
 import torch
 from transformers import Pipeline
 
-from angryface.ingest import extract_ref
-from angryface.generate import load_embeddings, load_db, load_model, TokenStoppingCriteria
+from llama2gptq.ingest import extract_ref
+from llama2gptq.generate import load_embeddings, load_db, load_model, TokenStoppingCriteria
 
 
 @torch.no_grad()
@@ -37,10 +37,8 @@ def qa(query, device, db, transformer: Pipeline, history: List[List[str]],
   answer = response.replace(prompt, "").strip()
 
   # output similarity
-  refs = db.similarity_search_with_relevance_scores(
+  refs = db.search(
       f'{user_token}{query}\n{bot_token}', search_type="similarity")
-  print([ref[1] for ref in refs])
-  refs = [ref[0] for ref in refs]
 
   # Print the result
   print('\nHelpful links\n')

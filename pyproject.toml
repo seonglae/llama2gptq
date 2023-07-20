@@ -16,9 +16,9 @@ dependencies = [
     "streamlit-chat~=0.1.1",
     "protobuf<=3.20.0"
 ]
-description = "People who are Angry face now because of $20 GPT-4"
+description = "Chat AI which can provide responses with reference documents by Prompt engineering over vector database."
 license = {text = "MIT"}
-name = "angryface"
+name = "llama2gptq"
 readme = "README.md"
 requires-python = ">= 3.8"
 version = "0.1.0"

@@ -1,8 +1,8 @@
 import fire
 
-from angryface.ingest import ingest
-from angryface.qa import chat_cli
-from angryface.quantize import quantization
+from llama2gptq.ingest import ingest
+from llama2gptq.qa import chat_cli
+from llama2gptq.quantize import quantization
 from constants import (SOURCE_DIRECTORY, PERSIST_DIRECTORY)
 
 

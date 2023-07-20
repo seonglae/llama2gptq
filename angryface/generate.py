@@ -54,6 +54,7 @@ def load_model(
     device: str, model_id="seonglae/llama-2-7b-chat-hf-gptq",
     model_basename="gptq_model-4bit-128g",
     model_type="gptq",
+    safetensor=True,
 ):
   assert device == "cuda"
 
@@ -71,6 +72,7 @@ def load_model(
         trust_remote_code=True,
         device='cuda:0',
         use_triton=False,
+        use_safetensors=safetensor,
     )
   elif model_type == "llama":
     model = LlamaForCausalLM.from_pretrained(
@@ -78,6 +80,7 @@ def load_model(
         device_map='cuda:0',
         torch_dtype=torch.float16,
         trust_remote_code=True,
+        use_safetensors=safetensor,
     )
   elif model_type == "auto":
     model = AutoModelForCausalLM.from_pretrained(
@@ -86,6 +89,7 @@ def load_model(
         torch_dtype=torch.float16,
         low_cpu_mem_usage=True,
         trust_remote_code=True,
+        use_safetensors=safetensor,
     )
     model.tie_weights()
   model.eval()

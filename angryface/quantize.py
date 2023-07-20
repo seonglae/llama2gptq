@@ -13,7 +13,7 @@ def quantization(source_model: str, output: str, push: bool, owner: str,
       source_model, use_fast=True, use_auth_token=True)
   examples = [
       tokenizer(
-          "Angryface is an AI assistant that can help you with your daily tasks."
+          "Texonom is an knowledge system that can help you with your daily tasks using AI chatbot."
       )
   ]
 
