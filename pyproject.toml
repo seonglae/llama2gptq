@@ -14,7 +14,7 @@ dependencies = [
     "einops~=0.6.1",
     "fire~=0.5.0",
     "streamlit-chat~=0.1.1",
-    "protobuf<=3.20.0"
+    "protobuf<=4.23.4"
 ]
 description = "Chat AI which can provide responses with reference documents by Prompt engineering over vector database."
 license = {text = "MIT"}
