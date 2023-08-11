@@ -47,7 +47,7 @@ def load_documents(folder_path: str) -> List[Document]:
 def extract_ref(ref: Document) -> Dict[str, str]:
   source = split(r"\\|/", ref.metadata["source"])[-1]
   slug = split(r" |.md", source)[-2]
-  title = source.replace(slug, "")[:-4]
+  title = ' '.join(slug.split('-')[:-1])
   link = f"https://texonom.com/{slug}"
   return {"title": title, "link": link}
 
@@ -56,7 +56,7 @@ def ingest(source: str, output: str, device='cuda'):
   print(f"Loading documents from {source}")
   documents = load_documents(source)
   for doc in documents:
-    doc.metadata["source"] = str(doc.metadata["source"])
+    doc.metadata["source"] = extract_ref(doc)['link']
   text_splitter = RecursiveCharacterTextSplitter(
       chunk_size=1000, chunk_overlap=200)
   texts = text_splitter.split_documents(documents)
