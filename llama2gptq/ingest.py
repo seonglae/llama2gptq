@@ -30,7 +30,7 @@ DOCUMENT_MAP = {
 
 
 def load_documents(folder_path: str) -> List[Document]:
-  glob = Path(f"{folder_path}").glob
+  glob = Path(folder_path).glob
   ps = list(glob("**/*.md"))
   documents = []
   for p in ps:
@@ -38,7 +38,9 @@ def load_documents(folder_path: str) -> List[Document]:
     loader_class = DOCUMENT_MAP.get(file_extension)
     if loader_class:
       loader = loader_class(p, encoding="utf-8")
-      documents.append(loader.load()[0])
+      document = loader.load()[0]
+      document.metadata["source"] = str(p)
+      documents.append(document)
     else:
       continue
   return documents
@@ -64,7 +66,7 @@ def ingest(source: str, output: str, device='cuda'):
   print(f"Split into {len(texts)} chunks of text")
 
   embeddings = HuggingFaceInstructEmbeddings(
-      model_name="hkunlp/instructor-xl",
+      model_name="intfloat/multilingual-e5-large",
       model_kwargs={"device": device},
   )
   db = Chroma.from_documents(
