@@ -63,7 +63,7 @@ Currently code structure is mainly focussed on Notion's csv exported data
 # Put document files to ./knowledge folder
 python main.py process
 # Or use provided Texonom DB
-git clone https://huggingface.co/datasets/texonom/texonom-md db
+git clone https://huggingface.co/datasets/texonom/md-chroma-instructor-xl db
 ```
 
 ## Quantize Model
